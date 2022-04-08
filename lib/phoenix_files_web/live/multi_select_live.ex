@@ -6,7 +6,7 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
 
   def render(assigns) do
     ~H"""
-    <div class="border border-gray-200 dark:border-gray-700 w-96 h-10 ">
+    <div class="border border-gray-200 dark:border-gray-700 w-96 h-10 m-2">
       <div class="w-96 flex" id="selected_options_container" phx-update="append" >
         <%= for option <- @selected_options do %>
           <div id={"option_#{option.data.name}"} class="bg-purple-500 shadow-lg rounded-lg mt-2 ml-1 text-white dark:bg-sky-500  w-16 text-center">
@@ -38,9 +38,9 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
 
   def mount(_params, _session, socket) do
     changeset =
-    [%{name: "Red"}, %{name: "Blue"}, %{name: "Pink"}]
-    |> build_options()
-    |> build_changeset()
+      [%{name: "Red"}, %{name: "Blue"}, %{name: "Pink"}] #hardcoded values
+      |> build_options()
+      |> build_changeset()
 
     socket = assign(socket, :changeset, changeset)
 
@@ -51,19 +51,20 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
     [{index, %{"selected" => selected?}}] = Map.to_list(values)
     index = String.to_integer(index)
     multi_options = Ecto.Changeset.get_field(socket.assigns.changeset, :options)
+    current_option = Enum.at(multi_options, index)
 
-    #add to selected_options list
+    # add to selected_options list
     socket =
       if selected? === "true" do
-        new_message = Enum.at(multi_options, index)
-        assign(socket, :selected_options, [new_message])
+        assign(socket, :selected_options, [current_option])
       else
-        socket
+        push_event(socket, "remove-el", %{id: "option_#{current_option.data.name}"})
       end
 
-    #check checkbox
-    old_value = Enum.at(multi_options, index)
-    updated_options = List.replace_at(multi_options, index, %{old_value | selected: selected?})
+    # check checkbox
+    updated_options =
+      List.replace_at(multi_options, index, %{current_option | selected: selected?})
+
     updated_changeset = build_changeset(updated_options)
 
     {:noreply, assign(socket, :changeset, updated_changeset)}
