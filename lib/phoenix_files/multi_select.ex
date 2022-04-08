@@ -13,5 +13,4 @@ defmodule PhoenixFiles.MultiSelect do
       field :data, :map, null: false
     end
   end
-
 end

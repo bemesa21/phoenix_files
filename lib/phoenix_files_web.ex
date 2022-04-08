@@ -112,5 +112,4 @@ defmodule PhoenixFilesWeb do
   defmacro __using__({which, opts}) when is_atom(which) do
     apply(__MODULE__, which, [opts])
   end
-
 end

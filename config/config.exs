@@ -39,7 +39,9 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
-config :tailwind, version: "3.0.23", default: [
+config :tailwind,
+  version: "3.0.23",
+  default: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css
