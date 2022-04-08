@@ -24,7 +24,7 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
       </div>
     </div>
     <.form let={f} for={@changeset} class="w-96 hidden mt-4 p-4 shadow-2xl rounded-lg" id="multiselect-form">
-      <%= inputs_for f, :values, fn value -> %>
+      <%= inputs_for f, :options, fn value -> %>
         <div class="form-check">
           <label class="form-check-label inline-block text-gray-800">
             <%= checkbox value, :selected, phx_change: "checked", value: value.data.selected, class: "form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" %>
@@ -37,19 +37,22 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
   end
 
   def mount(_params, _session, socket) do
-    socket =
-      socket
-      |> assign_new(:changeset, &get_values/0)
+    changeset =
+    [%{name: "Red"}, %{name: "Blue"}, %{name: "Pink"}]
+    |> build_options()
+    |> build_changeset()
+
+    socket = assign(socket, :changeset, changeset)
 
     {:ok, socket, temporary_assigns: [selected_options: []]}
   end
 
-  def handle_event("checked", %{"multi_select" => %{"values" => values}}, socket) do
+  def handle_event("checked", %{"multi_select" => %{"options" => values}}, socket) do
     [{index, %{"selected" => selected?}}] = Map.to_list(values)
-
     index = String.to_integer(index)
-    multi_options = Ecto.Changeset.get_field(socket.assigns.changeset, :values)
+    multi_options = Ecto.Changeset.get_field(socket.assigns.changeset, :options)
 
+    #add to selected_options list
     socket =
       if selected? === "true" do
         new_message = Enum.at(multi_options, index)
@@ -58,25 +61,23 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
         socket
       end
 
+    #check checkbox
     old_value = Enum.at(multi_options, index)
     updated_options = List.replace_at(multi_options, index, %{old_value | selected: selected?})
+    updated_changeset = build_changeset(updated_options)
 
-    updated_changeset =
-      %MultiSelect{}
-      |> Ecto.Changeset.change()
-      |> Ecto.Changeset.put_embed(:values, updated_options)
-
-    {:noreply, assign(socket, :changeset, updated_changeset) |> IO.inspect()}
+    {:noreply, assign(socket, :changeset, updated_changeset)}
   end
 
-  defp get_values() do
-    values = [
-      %SelectOption{data: %{name: "Red"}},
-      %SelectOption{data: %{name: "White"}}
-    ]
-
+  defp build_changeset(options) do
     %MultiSelect{}
     |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_embed(:values, values)
+    |> Ecto.Changeset.put_embed(:options, options)
+  end
+
+  defp build_options(options) do
+    Enum.reduce(options, [], fn data, acc ->
+      [%SelectOption{data: data} | acc]
+    end)
   end
 end

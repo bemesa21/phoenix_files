@@ -2,7 +2,7 @@ defmodule PhoenixFiles.MultiSelect do
   use Ecto.Schema
 
   embedded_schema do
-    embeds_many :values, PhoenixFiles.MultiSelect.SelectOption
+    embeds_many :options, PhoenixFiles.MultiSelect.SelectOption
   end
 
   defmodule SelectOption do
