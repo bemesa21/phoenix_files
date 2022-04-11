@@ -7,21 +7,21 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
   def render(assigns) do
     ~H"""
     <div class="border border-gray-200 dark:border-gray-700 w-96 h-10 m-2">
-      <div class="w-96 flex" id="selected_options_container" phx-update="append" >
+      <div class="w-96 flex relative" id="selected_options_container">
         <%= for option <- @selected_options do %>
           <div id={"option_#{option.label}"} class="bg-purple-500 shadow-lg rounded-lg mt-2 ml-1 text-white dark:bg-sky-500  w-16 text-center">
             <%= option.label %>
           </div>
         <% end %>
+        <div class="absolute right-0">
+          <svg id="down" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-0 top-2" viewBox="0 0 20 20" fill="currentColor" phx-click={JS.toggle() |> JS.toggle(to: "#up") |> JS.toggle(to: "#multiselect-form")}>
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+          <svg id="up" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5  absolute right-0 top-2 hidden" viewBox="0 0 20 20" fill="currentColor"  phx-click={JS.toggle() |> JS.toggle(to: "#down") |> JS.toggle(to: "#multiselect-form")}>
+            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+          </svg>
+        </div>
        </div>
-      <div class="relative">
-        <svg id="down" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-0 top-2" viewBox="0 0 20 20" fill="currentColor" phx-click={JS.toggle() |> JS.toggle(to: "#up") |> JS.toggle(to: "#multiselect-form")}>
-          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-        </svg>
-        <svg id="up" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5  absolute right-0 top-2 hidden" viewBox="0 0 20 20" fill="currentColor"  phx-click={JS.toggle() |> JS.toggle(to: "#down") |> JS.toggle(to: "#multiselect-form")}>
-          <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
-        </svg>
-      </div>
     </div>
     <.form let={f} for={@changeset} class="w-96 hidden mt-4 p-4 shadow-2xl rounded-lg" id="multiselect-form">
       <%= inputs_for f, :options, fn value -> %>
@@ -37,18 +37,24 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
   end
 
   def mount(_params, _session, socket) do
-    changeset =
+    options =
       [
         %{id: 1, label: "Red", selected: false},
         %{id: 2, label: "Blue", selected: true},
         %{id: 3, label: "Pink", selected: false}
       ] #hardcoded values
+
+    changeset =
+      options
       |> build_options()
       |> build_changeset()
 
-    socket = assign(socket, :changeset, changeset)
+    socket =
+    socket
+    |> assign(:changeset, changeset)
+    |> assign(:selected_options, filter_selected_options(options))
 
-    {:ok, socket, temporary_assigns: [selected_options: []]}
+    {:ok, socket}
   end
 
   def handle_event("checked", %{"multi_select" => %{"options" => values}}, socket) do
@@ -60,9 +66,13 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
     # add to selected_options list
     socket =
       if selected? === "true" do
-          assign(socket, :selected_options, [current_option])
+        assign(socket, :selected_options, [current_option | socket.assigns.selected_options])
       else
-        push_event(socket, "remove-el", %{id: "option_#{current_option.label}"})
+        new_options =
+        socket.assigns.selected_options
+        |> Enum.reject(fn opt -> opt.id == current_option.id end)
+
+        assign(socket, :selected_options, new_options)
       end
 
     # check checkbox
@@ -84,5 +94,9 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
     Enum.reduce(options, [], fn data, acc ->
       [%SelectOption{id: data.id, label: data.label, selected: data.selected} | acc]
     end)
+  end
+
+  defp filter_selected_options(options) do
+    Enum.filter(options, fn opt -> opt.selected end)
   end
 end
