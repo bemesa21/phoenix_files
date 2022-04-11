@@ -9,8 +9,8 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
     <div class="border border-gray-200 dark:border-gray-700 w-96 h-10 m-2">
       <div class="w-96 flex" id="selected_options_container" phx-update="append" >
         <%= for option <- @selected_options do %>
-          <div id={"option_#{option.data.name}"} class="bg-purple-500 shadow-lg rounded-lg mt-2 ml-1 text-white dark:bg-sky-500  w-16 text-center">
-            <%= option.data.name %>
+          <div id={"option_#{option.label}"} class="bg-purple-500 shadow-lg rounded-lg mt-2 ml-1 text-white dark:bg-sky-500  w-16 text-center">
+            <%= option.label %>
           </div>
         <% end %>
        </div>
@@ -28,7 +28,7 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
         <div class="form-check">
           <label class="form-check-label inline-block text-gray-800">
             <%= checkbox value, :selected, phx_change: "checked", value: value.data.selected, class: "form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" %>
-            <span class="ml-2"><%= value.data.data.name %></span>
+            <span class="ml-2"><%= value.data.label %></span>
           </label>
         </div>
       <% end %>
@@ -38,7 +38,11 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
 
   def mount(_params, _session, socket) do
     changeset =
-      [%{name: "Red"}, %{name: "Blue"}, %{name: "Pink"}] #hardcoded values
+      [
+        %{id: 1, label: "Red", selected: false},
+        %{id: 2, label: "Blue", selected: true},
+        %{id: 3, label: "Pink", selected: false}
+      ] #hardcoded values
       |> build_options()
       |> build_changeset()
 
@@ -56,9 +60,9 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
     # add to selected_options list
     socket =
       if selected? === "true" do
-        assign(socket, :selected_options, [current_option])
+          assign(socket, :selected_options, [current_option])
       else
-        push_event(socket, "remove-el", %{id: "option_#{current_option.data.name}"})
+        push_event(socket, "remove-el", %{id: "option_#{current_option.label}"})
       end
 
     # check checkbox
@@ -78,7 +82,7 @@ defmodule PhoenixFilesWeb.MultiSelectLive do
 
   defp build_options(options) do
     Enum.reduce(options, [], fn data, acc ->
-      [%SelectOption{data: data} | acc]
+      [%SelectOption{id: data.id, label: data.label, selected: data.selected} | acc]
     end)
   end
 end

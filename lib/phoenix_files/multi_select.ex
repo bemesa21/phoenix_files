@@ -10,7 +10,7 @@ defmodule PhoenixFiles.MultiSelect do
 
     embedded_schema do
       field :selected, :boolean, default: false
-      field :data, :map, null: false
+      field :label, :string
     end
   end
 end
