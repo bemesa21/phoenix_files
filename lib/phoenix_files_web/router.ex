@@ -17,7 +17,8 @@ defmodule PhoenixFilesWeb.Router do
   scope "/", PhoenixFilesWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live "/", BooksTableLive, :show
+
   end
 
   # Other scopes may use custom stacks.
