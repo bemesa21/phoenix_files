@@ -2,8 +2,6 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
   use PhoenixFilesWeb, :live_component
 
   alias PhoenixFiles.MultiSelect
-  alias PhoenixFiles.MultiSelect.SelectOption
-
   def render(assigns) do
     ~H"""
     <div>
@@ -24,7 +22,7 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
           </div>
         </div>
       </div>
-      <.form let={f} for={@changeset} phx_target={@myself} class="w-96 hidden mt-4 p-4 shadow-2xl rounded-lg" id="multiselect-form">
+      <.form let={f} for={@changeset} phx-target={@myself} class="w-96 hidden mt-4 p-4 shadow-2xl rounded-lg" id="multiselect-form">
         <%= inputs_for f, :options, fn value -> %>
           <div class="form-check">
             <label class="form-check-label inline-block text-gray-800">
@@ -38,18 +36,9 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
     """
   end
 
-  def update(_params, socket) do
-    options =
-      [
-        %{id: 1, label: "Red", selected: false},
-        %{id: 2, label: "Blue", selected: true},
-        %{id: 3, label: "Pink", selected: false}
-      ] #hardcoded values
 
-    changeset =
-      options
-      |> build_options()
-      |> build_changeset()
+  def update(%{options: options}, socket) do
+    changeset = build_changeset(options)
 
     socket =
     socket
@@ -65,25 +54,11 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
     multi_options = Ecto.Changeset.get_field(socket.assigns.changeset, :options)
     current_option = Enum.at(multi_options, index)
 
-    # add to selected_options list
-    socket =
-      if selected? === "true" do
-        assign(socket, :selected_options, [current_option | socket.assigns.selected_options])
-      else
-        new_options =
-        socket.assigns.selected_options
-        |> Enum.reject(fn opt -> opt.id == current_option.id end)
-
-        assign(socket, :selected_options, new_options)
-      end
-
-    # check checkbox
     updated_options =
       List.replace_at(multi_options, index, %{current_option | selected: selected?})
 
-    updated_changeset = build_changeset(updated_options)
-
-    {:noreply, assign(socket, :changeset, updated_changeset)}
+    send self(), {:updated_options, updated_options}
+    {:noreply, socket}
   end
 
   defp build_changeset(options) do
@@ -92,13 +67,7 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
     |> Ecto.Changeset.put_embed(:options, options)
   end
 
-  defp build_options(options) do
-    Enum.reduce(options, [], fn data, acc ->
-      [%SelectOption{id: data.id, label: data.label, selected: data.selected} | acc]
-    end)
-  end
-
   defp filter_selected_options(options) do
-    Enum.filter(options, fn opt -> opt.selected end)
+    Enum.filter(options, fn opt -> opt.selected == true or opt.selected == "true" end)
   end
 end
