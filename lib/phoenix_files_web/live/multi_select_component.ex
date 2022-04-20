@@ -2,13 +2,14 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
   use PhoenixFilesWeb, :live_component
 
   alias PhoenixFiles.MultiSelect
+
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="flex justify-center">
       <div class="border border-gray-200 dark:border-gray-700 w-96 h-10 m-2">
         <div class="w-96 flex relative" id="selected_options_container">
           <%= for option <- @selected_options do %>
-            <div id={"option_#{option.label}"} class="bg-purple-500 shadow-lg rounded-lg mt-2 ml-1 text-white dark:bg-sky-500  w-16 text-center">
+            <div id={"option_#{option.label}"} class="bg-purple-500 shadow-lg rounded-lg mt-2 ml-1 text-white dark:bg-sky-500 inline-block pl-2 pr-2 text-center">
               <%= option.label %>
             </div>
           <% end %>
@@ -22,7 +23,7 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
           </div>
         </div>
       </div>
-      <.form let={f} for={@changeset} phx-target={@myself} class="w-96 hidden mt-4 p-4 shadow-2xl rounded-lg" id="multiselect-form">
+      <.form let={f} for={@changeset} phx-target={@myself} class="hidden w-96 mt-4 p-4 ml-2 mt-16 absolute z-10 bg-stone-50 shadow-2xl rounded-lg" id="multiselect-form">
         <%= inputs_for f, :options, fn value -> %>
           <div class="form-check">
             <label class="form-check-label inline-block text-gray-800">
@@ -36,14 +37,13 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
     """
   end
 
-
   def update(%{options: options}, socket) do
     changeset = build_changeset(options)
 
     socket =
-    socket
-    |> assign(:changeset, changeset)
-    |> assign(:selected_options, filter_selected_options(options))
+      socket
+      |> assign(:changeset, changeset)
+      |> assign(:selected_options, filter_selected_options(options))
 
     {:ok, socket}
   end
@@ -57,7 +57,7 @@ defmodule PhoenixFilesWeb.MultiSelectComponent do
     updated_options =
       List.replace_at(multi_options, index, %{current_option | selected: selected?})
 
-    send self(), {:updated_options, updated_options}
+    send(self(), {:updated_options, updated_options})
     {:noreply, socket}
   end
 
