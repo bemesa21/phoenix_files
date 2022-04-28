@@ -80,7 +80,6 @@ defmodule PhoenixFilesWeb.BooksTableLive do
           acc
         end
       end)
-      |> Enum.uniq()
 
     if selected_options == [] do
       Book.list_books()
