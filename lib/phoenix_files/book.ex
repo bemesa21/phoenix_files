@@ -23,14 +23,11 @@ defmodule PhoenixFiles.Book do
   end
 
   def get_books_by_category(categories) do
-    Enum.reduce(categories, [], fn category, acc ->
       Repo.all(
         from(
           b in __MODULE__,
-          where: ^category in b.category
+          where: fragment("? && ?", b.category, ^categories)
         )
-      ) ++ acc
-    end)
-    |> Enum.uniq()
+      )
   end
 end
