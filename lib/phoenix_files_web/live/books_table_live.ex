@@ -35,7 +35,7 @@ defmodule PhoenixFilesWeb.BooksTableLive do
     <div class="grid grid-cols-5">
       <%= for book <- @books do %>
         <div class="max-w-sm rounded overflow-hidden shadow-lg m-5">
-          <img class="w-full h-96 object-contain" src={book.cover} alt="Sunset in the mountains">
+          <img class="w-full h-96 object-contain" src={book.cover}>
           <div class="px-6 py-4">
             <div class="font-bold text-xl mb-2"><%= book.title %></div>
               <p class="text-gray-700 text-base">
