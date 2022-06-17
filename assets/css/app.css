@@ -232,3 +232,22 @@
     rgb(255, 29, 94) 0px 0px 0px;
   }
 }
+
+use {
+  transition: 0.4s;
+  cursor: pointer;
+}
+
+.pod-wrap use:hover {
+  fill: #000000;
+}
+
+svg {
+  width: 330px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  z-index: -1
+}

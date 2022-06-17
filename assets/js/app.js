@@ -37,7 +37,6 @@ window.addEventListener("phx:remove-el", e => document.getElementById(e.detail.i
 
 window.addEventListener("phx:js-exec", ({detail}) => {
     document.querySelectorAll(detail.to).forEach(el => {
-        console.log(el)
         liveSocket.execJS(el, el.getAttribute(detail.attr))
     })
   })
