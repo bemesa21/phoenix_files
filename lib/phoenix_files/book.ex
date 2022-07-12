@@ -23,11 +23,11 @@ defmodule PhoenixFiles.Book do
   end
 
   def get_books_by_category(categories) do
-      Repo.all(
-        from(
-          b in __MODULE__,
-          where: fragment("? && ?", b.category, ^categories)
-        )
+    Repo.all(
+      from(
+        b in __MODULE__,
+        where: fragment("? && ?", b.category, ^categories)
       )
+    )
   end
 end

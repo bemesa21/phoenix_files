@@ -18,6 +18,7 @@ defmodule PhoenixFilesWeb.Router do
     pipe_through :browser
 
     live "/", BooksTableLive, :show
+    live "/spinner", SpinnerLive, :show
   end
 
   # Other scopes may use custom stacks.

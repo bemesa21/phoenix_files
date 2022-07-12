@@ -34,6 +34,13 @@ window.addEventListener("phx:page-loading-start", info => topbar.show())
 window.addEventListener("phx:page-loading-stop", info => topbar.hide())
 window.addEventListener("phx:remove-el", e => document.getElementById(e.detail.id).remove())
 
+
+window.addEventListener("phx:js-exec", ({detail}) => {
+    document.querySelectorAll(detail.to).forEach(el => {
+        liveSocket.execJS(el, el.getAttribute(detail.attr))
+    })
+  })
+  
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 
